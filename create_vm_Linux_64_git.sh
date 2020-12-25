@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Asking the user if they have downloaded the ISO and if not, if they would like to download one before the script starts
+read -p "Have you downloaded the Ubuntu ISO image? [yn]" answer
+if [[ $answer = y ]] ; then
+  echo "Already have the ISO downloaded. Continue with the script"
+elif [[ $answer = n ]]; then
+  read -p "Do you wish to download the ISO from the internet? [yn]" answer
+  if [[ $answer = y ]] ; then
+    wget -c "https://releases.ubuntu.com/20.04/ubuntu-20.04.1-desktop-amd64.iso"
+  else
+    echo "Please install the ISO image first, then start with the installation again"
+    exit
+  fi
+fi
+
 # Creating a VM and registering it 
 VBoxManage createvm --name Test1_Linux_VM --ostype Ubuntu_64 --register
 
