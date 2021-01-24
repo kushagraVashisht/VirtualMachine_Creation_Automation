@@ -17,28 +17,23 @@ fi
 # Creating a VM and registering it 
 VBoxManage createvm --name Test1_Linux_VM --ostype Ubuntu_64 --register
 
-# Setting systembase memory to the VM (2048MB), RAM (8GB) and VirtualCPUs (2).
-# Setting Shared Clipboard and Drag n Drop to bidirectional
-# Disabling Audio, USB, USB2.0, USB3.0 since there's no need for them
-VBoxManage modifyvm Test1_Linux_VM --memory 2048 --vram 256 --cpus 2 --audio none --usb off --usbehci off --usbxhci off --clipboard-mode bidirectional --draganddrop bidirectional
-
-# Create Virtual Hard Disk of size 10GB (recommended) and of format VDI
-VBoxManage createhd --filename VirtualBox\ VMs/Test1_Linux_VM/Test1_Linux_VM.vdi --size 10000 --format VDI
+# Create a storage medium once the VM has been registered (Ideally, the medium location should be set as: /Users/<user>/VirtualBox\ VMs/<name_of_the_medium_directory>/<medium.vdi>)
+VBoxManage createmedium --filename <Location where you want the medium to be created> --size 10240
 
 # Creating a SATA controller which we will attach the virtual disk to
-VBoxManage storagectl Test1_Linux_VM --name "SATA Controller" --add sata --controller IntelAhci
+VBoxManage storagectl Test1_Linux_VM --name SATA --add SATA --controller IntelAhci
 
 # Attaching the virtual disk to the SATA controller
-VBoxManage storageattach Test1_Linux_VM --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium VirtualBox\ VMs/Test1_Linux_VM/Test1_Linux_VM.vdi
+VBoxManage storageattach Test1_Linux_VM --storagectl SATA --port 0 --device 0 --type hdd --medium <medium_location>
 
-# Adding the IDE controller since we're creating a fresh VM from ISO image
-VBoxManage storagectl Test1_Linux_VM --name "IDE Controller" --add ide --controller PIIX4
+# Additions: systembase memory (2048MB), RAM (8GB), VirtualCPUs (2), Graphics Controller (vmsvga), Mouse (usbtablet), IOAPIC (on), Shared Clipboard (bidirectional), Drag n Drop (bidirectional)
+# Disabled: Audio, USB, USB2.0, USB3.0, Pae, accelerate3d
+# **IOAPIC: Allows the OS to use more than 16 interrupt requests(IRQs)
+VBoxManage modifyvm Test1_Linux_VM --memory 4096 --vram 16 --cpus 2 --graphicscontroller vmsvga --ioapic on --mouse usbtablet --clipboard-mode bidirectional --draganddrop bidirectional
+VBoxManage modifyvm Test1_Linux_VM --audio none --pae off --usb off --usbehci off --usbxhci off --accelerate3d off
 
-# Attach the ISO image to IDE controller (Ubuntu 20.04.1)
-VBoxManage storageattach Test1_Linux_VM --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium <Full path to the location of the ISO file>
+# Defining the network settings for the VM (Uncomment if you wish to use)
+# VBoxManage modifyvm ubuntu18server --nic1 bridged --bridgeadapter1 wlan0 --nic2 nat
 
 # Unattended installation and start VM
-VBoxManage unattended install Test1_Linux_VM --user=kush --password=Sample@123 --country=AU --time-zone=AEDT --iso=<full path of the ISO file> --post-install-template=<Full path of the post install bash script> --start-vm=gui
-
-# Starting the VM (No Need for this bit, still testing out things)
-# VBoxManage startvm Test1_Linux_VM
+VBoxManage unattended install Test1_Linux_VM --user=<username> --password=<password> --country=AU --time-zone=AEDT --iso=<iso_full_path_directory> --start-vm=gui
